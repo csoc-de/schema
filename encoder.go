@@ -11,8 +11,9 @@ type encoderFunc func(reflect.Value) string
 
 // Encoder encodes values from a struct into url.Values.
 type Encoder struct {
-	cache  *cache
-	regenc map[reflect.Type]encoderFunc
+	cache         *cache
+	regenc        map[reflect.Type]encoderFunc
+	keySeparation bool
 }
 
 // NewEncoder returns a new Encoder with defaults.
@@ -26,7 +27,7 @@ func NewEncoder() *Encoder {
 func (e *Encoder) Encode(src interface{}, dst map[string][]string) error {
 	v := reflect.ValueOf(src)
 
-	return e.encode(v, dst)
+	return e.encode(v, dst, "")
 }
 
 // RegisterEncoder registers a converter for encoding a custom type.
@@ -38,6 +39,14 @@ func (e *Encoder) RegisterEncoder(value interface{}, encoder func(reflect.Value)
 // The default tag is "schema".
 func (e *Encoder) SetAliasTag(tag string) {
 	e.cache.tag = tag
+}
+
+// ActivateKeySeparation causes the keys of nested struct fields to be separated
+// with a period when encoding.
+//
+// Allows encoded values to be decoded again using schema.Decode.
+func (e *Encoder) ActivateKeySeparation() {
+	e.keySeparation = true
 }
 
 // isValidStructPointer test if input value is a valid struct pointer.
@@ -75,7 +84,7 @@ func isZero(v reflect.Value) bool {
 	return v.Interface() == z.Interface()
 }
 
-func (e *Encoder) encode(v reflect.Value, dst map[string][]string) error {
+func (e *Encoder) encode(v reflect.Value, dst map[string][]string, prefix string) error {
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
@@ -91,10 +100,13 @@ func (e *Encoder) encode(v reflect.Value, dst map[string][]string) error {
 		if name == "-" {
 			continue
 		}
+		if prefix != "" && e.keySeparation {
+			name = prefix + "." + name
+		}
 
 		// Encode struct pointer types if the field is a valid pointer and a struct.
 		if isValidStructPointer(v.Field(i)) && !e.hasCustomEncoder(v.Field(i).Type()) {
-			err := e.encode(v.Field(i).Elem(), dst)
+			err := e.encode(v.Field(i).Elem(), dst, name)
 			if err != nil {
 				errors[v.Field(i).Elem().Type().String()] = err
 			}
@@ -115,7 +127,7 @@ func (e *Encoder) encode(v reflect.Value, dst map[string][]string) error {
 		}
 
 		if v.Field(i).Type().Kind() == reflect.Struct {
-			err := e.encode(v.Field(i), dst)
+			err := e.encode(v.Field(i), dst, name)
 			if err != nil {
 				errors[v.Field(i).Type().String()] = err
 			}

@@ -523,3 +523,32 @@ func TestRegisterEncoderWithPtrType(t *testing.T) {
 	valExists(t, "DateStart", ss.DateStart.time.String(), vals)
 	valExists(t, "DateEnd", "", vals)
 }
+
+func TestSeparation(t *testing.T) {
+	type outter struct {
+		Inner inner
+	}
+	type nested struct {
+		Outter outter
+	}
+
+	nest := nested{
+		Outter: outter{
+			Inner: inner{
+				F12: 12,
+			},
+		},
+	}
+
+	encoder := NewEncoder()
+	encoder.ActivateKeySeparation()
+
+	vals := map[string][]string{}
+	err := encoder.Encode(nest, vals)
+
+	t.Log(vals)
+
+	noError(t, err)
+	valsLength(t, 1, vals)
+	valExists(t, "Outter.Inner.F12", "12", vals)
+}
