@@ -524,7 +524,7 @@ func TestRegisterEncoderWithPtrType(t *testing.T) {
 	valExists(t, "DateEnd", "", vals)
 }
 
-func TestEncoder_WithOriginalKeyPath(t *testing.T) {
+func TestEncoderKeyOriginalPath(t *testing.T) {
 	type outter struct {
 		Inner inner
 	}
@@ -541,7 +541,7 @@ func TestEncoder_WithOriginalKeyPath(t *testing.T) {
 	}
 
 	encoder := NewEncoder()
-	encoder.OriginalKeyPath(true)
+	encoder.KeyOriginalPath(true)
 
 	vals := map[string][]string{}
 	err := encoder.Encode(nest, vals)
