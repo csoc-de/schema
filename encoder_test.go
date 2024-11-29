@@ -524,7 +524,7 @@ func TestRegisterEncoderWithPtrType(t *testing.T) {
 	valExists(t, "DateEnd", "", vals)
 }
 
-func TestSeparation(t *testing.T) {
+func TestEncoder_WithOriginalKeyPath(t *testing.T) {
 	type outter struct {
 		Inner inner
 	}
@@ -541,7 +541,7 @@ func TestSeparation(t *testing.T) {
 	}
 
 	encoder := NewEncoder()
-	encoder.ActivateKeySeparation()
+	encoder.OriginalKeyPath(true)
 
 	vals := map[string][]string{}
 	err := encoder.Encode(nest, vals)

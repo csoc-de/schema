@@ -11,9 +11,9 @@ type encoderFunc func(reflect.Value) string
 
 // Encoder encodes values from a struct into url.Values.
 type Encoder struct {
-	cache         *cache
-	regenc        map[reflect.Type]encoderFunc
-	keySeparation bool
+	cache           *cache
+	regenc          map[reflect.Type]encoderFunc
+	keyOriginalPath bool
 }
 
 // NewEncoder returns a new Encoder with defaults.
@@ -41,12 +41,12 @@ func (e *Encoder) SetAliasTag(tag string) {
 	e.cache.tag = tag
 }
 
-// ActivateKeySeparation causes the keys of nested struct fields to be separated
-// with a period when encoding.
+// KeyOriginalPath causes the keys of nested struct fields to keep their full original
+// name consisting of each field name in its path separated with a period.
 //
-// Allows encoded values to be decoded again using schema.Decode.
-func (e *Encoder) ActivateKeySeparation() {
-	e.keySeparation = true
+// Allows from nested struct encoded values to be decoded again using schema.Decode.
+func (e *Encoder) KeyOriginalPath(originalKeyPath bool) {
+	e.keyOriginalPath = originalKeyPath
 }
 
 // isValidStructPointer test if input value is a valid struct pointer.
@@ -100,7 +100,7 @@ func (e *Encoder) encode(v reflect.Value, dst map[string][]string, prefix string
 		if name == "-" {
 			continue
 		}
-		if prefix != "" && e.keySeparation {
+		if prefix != "" && e.keyOriginalPath {
 			name = prefix + "." + name
 		}
 
