@@ -526,7 +526,8 @@ func TestRegisterEncoderWithPtrType(t *testing.T) {
 
 func TestEncoderKeyOriginalPath(t *testing.T) {
 	type outter struct {
-		Inner inner
+		Inner    inner
+		InnerPtr *inner
 	}
 	type nested struct {
 		Outter outter
@@ -535,6 +536,9 @@ func TestEncoderKeyOriginalPath(t *testing.T) {
 	nest := nested{
 		Outter: outter{
 			Inner: inner{
+				F12: 12,
+			},
+			InnerPtr: &inner{
 				F12: 12,
 			},
 		},
@@ -549,6 +553,7 @@ func TestEncoderKeyOriginalPath(t *testing.T) {
 	t.Log(vals)
 
 	noError(t, err)
-	valsLength(t, 1, vals)
+	valsLength(t, 2, vals)
 	valExists(t, "Outter.Inner.F12", "12", vals)
+	valExists(t, "Outter.InnerPtr.F12", "12", vals)
 }
