@@ -45,8 +45,8 @@ func (e *Encoder) SetAliasTag(tag string) {
 // name consisting of each field name in its path separated with a period.
 //
 // Allows from nested struct encoded values to be decoded again using schema.Decode.
-func (e *Encoder) KeyOriginalPath(originalKeyPath bool) {
-	e.keyOriginalPath = originalKeyPath
+func (e *Encoder) KeyOriginalPath(keyOriginalPath bool) {
+	e.keyOriginalPath = keyOriginalPath
 }
 
 // isValidStructPointer test if input value is a valid struct pointer.
